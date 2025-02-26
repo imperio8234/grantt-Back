@@ -6,7 +6,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   app.enableCors({
-    origin: ['http://localhost:3000'], // Orígenes permitidos
+    origin: ['http://localhost:3000', 'http://localhost:5173'], // Orígenes permitidos
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Métodos permitidos
     allowedHeaders: 'Content-Type,Authorization', // Encabezados permitidos
     credentials: true,

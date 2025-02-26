@@ -21,6 +21,7 @@ import { Link } from './link/link.entity';
       database: 'database.sqlite',
       entities: [Task, ChildTask, Link],
       synchronize: true,
+      dropSchema: true
     }),
   ],
   controllers: [AppController],

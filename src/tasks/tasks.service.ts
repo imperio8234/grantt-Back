@@ -11,7 +11,9 @@ export class TasksService {
   ) {}
 
   async getTasks(): Promise<Task[]> {
-    return this.taskRepository.find();
+    const tasks = await this.taskRepository.find();
+    console.log("services" ,tasks)
+    return tasks;
   }
 
   async getTaskById(id: number): Promise<Task | null> {
@@ -20,6 +22,7 @@ export class TasksService {
 
   async createTask(taskData: Partial<Task>): Promise<Task> {
     const newTask = this.taskRepository.create(taskData);
+    console.log("se guardaron", newTask)
     return this.taskRepository.save(newTask);
   }
 

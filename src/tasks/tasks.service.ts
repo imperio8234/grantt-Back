@@ -13,10 +13,16 @@ export class TasksService {
     @InjectRepository(Link)
     private linkRepository: Repository<Link>
   ) {}
-  async getTasks(): Promise<Task[]> {
-    const tasks = await this.taskRepository.find();
+
+  async getTasks(idUser: string): Promise<Task[]> {
+    const tasks = await this.taskRepository.find({
+      where: { user: { idUser } }
+    });
+  
+  
     return tasks;
   }
+  
 
   async getTaskById(id: number): Promise<Task | null> {
     return this.taskRepository.findOne({ where: { id } });

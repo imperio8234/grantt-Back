@@ -6,25 +6,27 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { LinkService } from './link.service';
 import { LinkData } from './dto';
+import { JwtAuthGuard } from 'src/util/auth.guard';
 
+@UseGuards(JwtAuthGuard)
 @Controller('link')
 export class LinkController {
   constructor(private linkServices: LinkService) {}
 
   
-  @Get('/')
-  async getLinks() {
-    const data = await this.linkServices.getLink();
+  @Get('/:id')
+  async getLinks(@Param('id') id: string) {
+    const data = await this.linkServices.getLink(id);
     return { success: true, data };
   }
 
 
   @Post('/')
   async createLink(@Body() taskData: LinkData) {
-    console.log(taskData);
     const newTask = this.linkServices.createLink(taskData);
     return newTask;
   }

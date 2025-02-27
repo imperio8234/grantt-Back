@@ -1,20 +1,30 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { Task } from './task.entity';
-import { TaskData } from 'src/child-task/dto';
 
+import { JwtAuthGuard } from 'src/util/auth.guard';
+
+@UseGuards(JwtAuthGuard)
 @Controller('tasks')
 export class TasksController {
   constructor(private taskServices: TasksService) {}
-  @Get('/')
-  async getTasks() {
-    const data = await this.taskServices.getTasks();
+  @Get('/:id')
+  async getTasks(@Param('id') id: string) {
+    const data = await this.taskServices.getTasks(id);
     
     return { success: true, data };
   }
   @Post('/')
   async createTask(@Body() taskData: Task) {
-    console.log(taskData)
     const newTask = this.taskServices.createTask(taskData);
     return newTask;
   }

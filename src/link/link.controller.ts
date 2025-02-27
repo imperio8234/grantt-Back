@@ -18,7 +18,6 @@ export class LinkController {
   @Get('/')
   async getLinks() {
     const data = await this.linkServices.getLink();
-    console.log('se pidieron los datos', data);
     return { success: true, data };
   }
 
@@ -39,7 +38,7 @@ export class LinkController {
     return await this.linkServices.updateTask(id, taskData);
   }
 
-  @Delete('id')
+  @Delete('/:id')
   async deleteTask(@Param('id') id: number) {
     await this.linkServices.deleteTask(id);
   }

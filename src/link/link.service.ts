@@ -10,9 +10,10 @@ export class LinkService {
     private linkRepository: Repository<Link>,
   ) {}
 
-  async getLink(): Promise<Link[]> {
-    const link = await this.linkRepository.find();
-    console.log('services', link);
+  async getLink(id: any): Promise<Link[]> {
+    const link = await this.linkRepository.find({
+      where: { user: { idUser: id } },
+    });
     return link;
   }
 
@@ -22,7 +23,6 @@ export class LinkService {
 
   async createLink(taskData: Partial<Link>): Promise<Link> {
     const newLink = this.linkRepository.create(taskData);
-    console.log('se guardaron', newLink);
     return this.linkRepository.save(newLink);
   }
 

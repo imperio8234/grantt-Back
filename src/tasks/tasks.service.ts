@@ -2,19 +2,27 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from './task.entity';
 import { Repository } from 'typeorm';
+import { Link } from 'src/link/link.entity';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
+  
+    @InjectRepository(Link)
+    private linkRepository: Repository<Link>
   ) {}
 
-  async getTasks(): Promise<Task[]> {
-    const tasks = await this.taskRepository.find();
-    console.log("services" ,tasks)
+  async getTasks(idUser: string): Promise<Task[]> {
+    const tasks = await this.taskRepository.find({
+      where: { user: { idUser } }
+    });
+  
+  
     return tasks;
   }
+  
 
   async getTaskById(id: number): Promise<Task | null> {
     return this.taskRepository.findOne({ where: { id } });
@@ -22,7 +30,7 @@ export class TasksService {
 
   async createTask(taskData: Partial<Task>): Promise<Task> {
     const newTask = this.taskRepository.create(taskData);
-    console.log("se guardaron", newTask)
+    
     return this.taskRepository.save(newTask);
   }
 
@@ -31,7 +39,9 @@ export class TasksService {
     return this.getTaskById(id);
   }
 
-  async deleteTask(id: number): Promise<void> {
+  async deleteTask(id: any): Promise<void> {
     await this.taskRepository.delete(id);
+    await this.taskRepository.delete({ parent: id });
+    await this.linkRepository.delete({ source: id });
   }
 }

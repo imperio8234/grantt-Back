@@ -33,19 +33,22 @@ jobs:
       - name: Deploy to DigitalOcean Droplet
         if: success()
         env:
-          HOST: ${{ secrets.HOST }}
-          USER: ${{ secrets.USER }}
-          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-          APP_DIR: /grantt-Back
+           HOST: ${{ secrets.HOST }}
+           USER: ${{ secrets.USER }}
+           SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+           APP_DIR: /grantt-Back
         run: |
-          # Copiar los archivos al servidor usando sshpass
-          sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no -r dist/* $USER@$HOST:$APP_DIR
+            # Copiar los archivos al servidor usando sshpass
+            sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no -r dist/* $USER@$HOST:$APP_DIR
 
-          # Instalar dependencias en el servidor y reiniciar la aplicación
-          sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no $USER@$HOST "
+            # Instalar dependencias en el servidor y reiniciar la aplicación
+            sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no $USER@$HOST "
+            set -e # Detiene el script si falla algún comando
+            set -x # Muestra los comandos que se ejecutan para depurar
             export NVM_DIR=\"$HOME/.nvm\" &&
             [ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\" &&
             cd $APP_DIR &&
-            /root/.nvm/versions/node/v21.7.3/bin/npm ci --omit=dev &&
-            pm2 restart grantt-back
-          "
+      /root/.nvm/versions/node/v21.7.3/bin/npm ci --omit=dev &&
+      pm2 restart grantt-back
+    "
+

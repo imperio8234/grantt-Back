@@ -1,4 +1,4 @@
-name: Deploy Nest.js
+name: Deploy Nest.js App 
 
 on:
   push:
@@ -36,14 +36,16 @@ jobs:
           HOST: ${{ secrets.HOST }}
           USER: ${{ secrets.USER }}
           SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-          APP_DIR: /grantt-Back  # Carpeta donde se aloja la API Nest.js
+          APP_DIR: /grantt-Back
         run: |
           # Copiar los archivos al servidor usando sshpass
           sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no -r dist/* $USER@$HOST:$APP_DIR
 
           # Instalar dependencias en el servidor y reiniciar la aplicación
           sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no $USER@$HOST "
+            export NVM_DIR=\"$HOME/.nvm\" &&
+            [ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\" &&
             cd $APP_DIR &&
-            npm ci --omit=dev &&
-            pm2 restart grantt-back  # Reinicia la aplicación usando PM2
+            /root/.nvm/versions/node/v21.7.3/bin/npm ci --omit=dev &&
+            pm2 restart grantt-back
           "

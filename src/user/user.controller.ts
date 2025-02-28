@@ -19,7 +19,7 @@ export class UserController {
   async login(@Body() user: UserEntity, res: Response) {
     user.idUser = uuidv4();
     const getUser = await this.userService.getUser(user.name);
-
+    console.log('usuario ingresando');
     if (getUser) {
       const isPasswordValid = await this.passManager.verifyPassword(
         user.password,
@@ -31,7 +31,7 @@ export class UserController {
 
         const payload = { username: getUser.name, sub: getUser.idUser };
         const token = this.jwtService.sign(payload);
-
+        console.log('usuario verificado se enviaran los datos');
         return {
           message: 'Usuario verificado',
           user: getUser,
@@ -39,12 +39,13 @@ export class UserController {
           success: true
         };
       }
-
+      console.log('contraseña icorrecta');
       return {
         success: false,
         message: 'Contraseña incorrecta',
       };
     } else {
+      console.log('creando usuario');
       const encryptedPassword = await this.passManager.encriptPaswoord(
         user.password,
       );

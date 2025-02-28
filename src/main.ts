@@ -9,7 +9,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:5173',
-      'http://52.91.213.70',
+      'http://143.244.178.5',
     ], // Orígenes permitidos
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS', // Métodos permitidos
     allowedHeaders: 'Content-Type,Authorization', // Encabezados permitidos

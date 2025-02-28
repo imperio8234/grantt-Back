@@ -1,4 +1,4 @@
-name: Deploy Nest.js App 
+name: Deploy to DigitalOcean
 
 on:
   push:
@@ -7,48 +7,51 @@ on:
   pull_request:
     branches:
       - main
-
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 21
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 21
+          node-version: '21'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      - name: Build Nest.js project
+      - name: Build project
         run: npm run build
 
-      - name: Install sshpass (for password-based SSH)
-        run: sudo apt-get install -y sshpass
-
-      - name: Deploy to DigitalOcean Droplet
-        if: success()
-        env:
-           HOST: ${{ secrets.HOST }}
-           USER: ${{ secrets.USER }}
-           SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
-           APP_DIR: /grantt-Back
+      - name: Archive production build
         run: |
-            # Copiar los archivos al servidor usando sshpass
-            sshpass -p "$SSH_PASSWORD" scp -o StrictHostKeyChecking=no -r dist/* $USER@$HOST:$APP_DIR
+          tar -czf app.tar.gz dist package.json package-lock.json
 
-            # Instalar dependencias en el servidor y reiniciar la aplicación
-            sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no $USER@$HOST "
-            set -e # Detiene el script si falla algún comando
-            set -x # Muestra los comandos que se ejecutan para depurar
-            export NVM_DIR=\"$HOME/.nvm\" &&
-            [ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\" &&
-            cd $APP_DIR &&
-      /root/.nvm/versions/node/v21.7.3/bin/npm ci --omit=dev &&
-      pm2 restart grantt-back
-    "
+      - name: Copy files to DigitalOcean Droplet
+        env:
+          HOST: ${{ secrets.HOST }}
+          USER: ${{ secrets.USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -p "$SSH_PASSWORD" scp app.tar.gz $USER@$HOST:~/app.tar.gz
+
+      - name: Deploy on DigitalOcean Droplet
+        env:
+          HOST: ${{ secrets.HOST }}
+          USER: ${{ secrets.USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -p "$SSH_PASSWORD" ssh $USER@$HOST << 'EOF'
+          pm2 stop all || true
+          rm -rf app
+          mkdir app
+          tar -xzf app.tar.gz -C app
+          cd app
+          npm install --production
+          pm2 start dist/main.js --name my-nest-app
+          EOF
+
 

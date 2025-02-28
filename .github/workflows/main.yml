@@ -1,0 +1,57 @@
+name: Deploy to DigitalOcean
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '21'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Archive production build
+        run: |
+          tar -czf app.tar.gz dist package.json package-lock.json
+
+      - name: Copy files to DigitalOcean Droplet
+        env:
+          HOST: ${{ secrets.HOST }}
+          USER: ${{ secrets.USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -p "$SSH_PASSWORD" scp app.tar.gz $USER@$HOST:~/app.tar.gz
+
+      - name: Deploy on DigitalOcean Droplet
+        env:
+          HOST: ${{ secrets.HOST }}
+          USER: ${{ secrets.USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -p "$SSH_PASSWORD" ssh $USER@$HOST << 'EOF'
+          pm2 stop all || true
+          rm -rf app
+          mkdir app
+          tar -xzf app.tar.gz -C app
+          cd app
+          npm install --production
+          pm2 start dist/main.js --name my-nest-app
+          EOF
+
+
